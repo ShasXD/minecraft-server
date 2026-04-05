@@ -1,0 +1,64 @@
+name: Minecraft 24/7 Server
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */5 * * *"
+
+jobs:
+  minecraft:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v4
+
+    - name: Install Java + Tools
+      run: |
+        sudo apt update
+        sudo apt install openjdk-21-jdk screen zip unzip wget git -y
+
+    - name: Create Server Folder
+      run: |
+        mkdir server
+
+    - name: Download Paper 1.21.11
+      run: |
+        cd server
+        wget -O paper.jar https://api.papermc.io/v2/projects/paper/versions/1.21.1/builds/latest/downloads/paper-1.21.1.jar
+        echo "eula=true" > eula.txt
+
+    - name: Restore World Backup
+      run: |
+        if [ -f world-backup/world.zip ]; then
+          unzip world-backup/world.zip -d server/
+        fi
+
+    - name: Install Playit Tunnel
+      run: |
+        wget https://github.com/playit-cloud/playit-agent/releases/latest/download/playit-linux-amd64
+        chmod +x playit-linux-amd64
+
+    - name: Start Minecraft Server
+      run: |
+        cd server
+        screen -dmS mc java -Xmx4G -Xms2G -jar paper.jar nogui
+        cd ..
+        ./playit-linux-amd64 --secret ${{ secrets.PLAYIT_SECRET }} &
+
+    - name: Auto Backup System
+      run: |
+        while true
+        do
+          sleep 600
+          cd server
+          zip -r world.zip world
+          mv world.zip ../world-backup/world.zip
+          cd ..
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+          git add world-backup/world.zip
+          git commit -m "Auto backup" || true
+          git push
+        done
