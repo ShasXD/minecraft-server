@@ -50,9 +50,10 @@ jobs:
     - name: Start Minecraft Server
       run: |
         cd server
-        screen -dmS mc java -Xmx4G -Xms2G -jar paper.jar nogui
+        java -Xmx4G -Xms2G -jar paper.jar nogui &
         cd ..
-        ./playit-linux-amd64 &
+        sleep 20
+        ./playit-linux-amd64
 
     - name: Auto Backup System
       run: |
