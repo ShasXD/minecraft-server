@@ -45,7 +45,7 @@ jobs:
         cd server
         screen -dmS mc java -Xmx4G -Xms2G -jar paper.jar nogui
         cd ..
-        ./playit-linux-amd64 --secret ${{ secrets.PLAYIT_SECRET }} &
+        ./playit-linux-amd64 &
 
     - name: Auto Backup System
       run: |
