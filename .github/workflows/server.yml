@@ -48,6 +48,27 @@ jobs:
             unzip world-backup/world.zip -d server/
           fi
 
+ 
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install Java
+      uses: actions/setup-java@v4
+      with:
+       distribution: 'temurin'
+       java-version: '21'
+
+    - name: Download Playit
+      run: wget https://github.com/playit-cloud/playit-agent/releases/latest/download/playit-linux-amd64
+
+    - name: Setup Playit
+      run: |
+          chmod +x playit-linux-amd64
+          ./playit-linux-amd64 &
+
+    - name: Start Minecraft Server
+      run: |
+          cd server
+          java -Xmx4G -jar server.jar nogui
     - name: Install Playit Tunnel
       run: |
           wget https://github.com/playit-cloud/playit-agent/releases/latest/download/playit-linux-amd64
